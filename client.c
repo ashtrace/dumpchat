@@ -3,13 +3,18 @@
 
 #pragma comment(lib, "ws2_32.lib")
 
+#define TRUE		1
+#define ADDR_SIZE	16
+#define MSG_SIZE	256
+
+void communicate(SOCKET);
+
 int main(int argc, char *argv[]) {
 	WSADATA wsa;
 	SOCKET socket_fd;
 	struct sockaddr_in server;
-	char address[16], server_reply[2000];
+	char address[ADDR_SIZE];
 	unsigned int port = 0;
-	int recv_size;
 
 	puts("[*] Initialising Winsock...\n");
 
@@ -27,9 +32,9 @@ int main(int argc, char *argv[]) {
 
 	puts("[*] Socket Created.\n");
 
-	puts("[+] Enter server address: ");
+	printf("[+] Enter server address: ");
 	scanf("%s", address);
-	puts("[+] Enter port: ");
+	printf("[+] Enter port: ");
 	scanf("%d", &port);
 
 	server.sin_addr.s_addr = inet_addr(address);
@@ -37,21 +42,42 @@ int main(int argc, char *argv[]) {
 	server.sin_family = AF_INET;
 
 	if ( connect(socket_fd, (struct sockaddr *)&server, sizeof(server)) < 0) {
-		fprintf(stderr, "[!!] Failed to connect.\n");// to %s:%d. Error Code: %d\n", address, port, WSAGetLastError());
+		fprintf(stderr, "[!!] Failed to connect.\n to %s:%d. Error Code: %d\n", address, port, WSAGetLastError());
 		return -1;
 	}
 
 	printf("[*] Connected to %s:%d\n", address, port);
 
-	if ((recv_size = recv(socket_fd, server_reply, 2000, 0)) == SOCKET_ERROR) {
-		fprintf(stderr, "[!!] Failed to receive data.\n Error Code: %d\n", WSAGetLastError());
-	}
-
-	server_reply[recv_size] = '\0';
-
-	printf("[*] Received Data.\n%s\n", server_reply);
+	communicate(socket_fd);
 
 	return 0;
+}
+
+void communicate(SOCKET server_fd) {
+	char server_reply[MSG_SIZE], message[MSG_SIZE] = {0};
+
+	int recv_size = 0;
+
+	if ((recv_size = recv(server_fd, server_reply, 2000, 0)) == SOCKET_ERROR) {
+		fprintf(stderr, "[!!] Failed to receive data.\n Error Code: %d\n", WSAGetLastError());
+	} else if (recv_size == 0) {
+		puts("[*] Connection closed.");
+	}
+	server_reply[recv_size] = '\0';
+	printf("[*] Received Data.\n%s\n", server_reply);
+
+	setbuf(stdin, NULL);
+	while (TRUE) {
+		printf("[>>>>] ");
+		fgets(message, MSG_SIZE, stdin);
+
+		if (!strcmp(message, ":quit\n")) {
+			send(server_fd, "QUIT", strlen("QUIT"), 0);
+			return;
+		} else {
+			send(server_fd, message, strlen(message), 0);
+		}
+	}
 }
 
 	
