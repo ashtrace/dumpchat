@@ -3,6 +3,11 @@
 
 #pragma comment(lib, "ws2_32.lib")
 
+#define TRUE		1
+#define MSG_SIZE	256
+
+void communicate(SOCKET);
+
 int main(int argc, char *argv[]) {
 	WSADATA	wsa;
 	SOCKET socket_fd, client_fd;
@@ -37,7 +42,7 @@ int main(int argc, char *argv[]) {
 	puts("[*] Binded Address.\n");
 	
 	listen(socket_fd, 3);
-	puts("[*] Listening.\n");
+	puts("[*] Listening on port 7777.\n");
 
 	puts("[*] Accepting Connections.\n");
 	
@@ -45,8 +50,7 @@ int main(int argc, char *argv[]) {
 	client_fd = accept(socket_fd, (struct sockaddr *)&client, &sockaddr_in_size);
 	printf("[*] Accepted connection from: %s:%d\n", inet_ntoa(client.sin_addr), ntohs(client.sin_port));
 
-	const char *message = "Hello, There\n";
-	send(client_fd, message, strlen(message), 0);
+	communicate(client_fd);
 
 	getchar();
 
@@ -57,4 +61,24 @@ int main(int argc, char *argv[]) {
 
 	return 0;
 
+}
+
+void communicate(SOCKET client_fd) {
+	int recv_size = 0;
+	char client_reply[MSG_SIZE];
+
+	const char *banner = "Hello, There\nEnter message\nYou can exit by typing \":quit\"\n";
+	send(client_fd, banner, strlen(banner), 0);
+
+	while (TRUE) {
+		recv_size = recv(client_fd, client_reply, 2000, 0);
+		client_reply[recv_size] = '\0';
+
+		puts("[DEBUG] Received Message.");
+		printf("%s\n", client_reply);
+
+		if (!strcmp(client_reply, "QUIT"))
+			return;
+	}
+	
 }
