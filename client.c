@@ -36,11 +36,11 @@ int main(int argc, char *argv[]) {
 
 	puts("[DEBUG] Socket Created.\n");
 
-	printf("[+] Enter server address: ");
+	printf("[INPUT] Enter server address: ");
 	scanf("%s", address);
-	printf("[+] Enter port: ");
+	printf("[INPUT] Enter port: ");
 	scanf("%d", &port);
-	printf("[+] Enter username: ");
+	printf("[INPUT] Enter username: ");
 	scanf("%s", username);
 
 	server.sin_addr.s_addr = inet_addr(address);
@@ -66,29 +66,21 @@ void recv_banner(SOCKET server_fd) {
 	int recv_size = 0;
 
 	if ((recv_size = recv(server_fd, server_banner, 2000, 0)) == SOCKET_ERROR) {
-		fprintf(stderr, "[ERROR] Failed to receive data.\n Error Code: %d\nPlease Retry.\n", WSAGetLastError());
-		send(server_fd, "QUIT", strlen("QUIT"), 0);
-		exit(-1);
+		fprintf(stderr, "[ERROR] Failed to receive data.\n Error Code: %d. Please Retry.\n", WSAGetLastError());
+		ExitProcess(-1);
 	} else if (recv_size == 0) {
 		puts("[DEBUG] Connection closed.");
+		ExitProcess(-1);
 	}
+
 	server_banner[recv_size] = '\0';
 	printf("[DEBUG] Received Data.\n%s\n", server_banner);
 }
 
 void send_username(SOCKET server_fd, char *username) {
-	int recv_size = 0;
-	char conf_msg [4] = {0};
-
 	if (send(server_fd, username, strlen(username), 0) == SOCKET_ERROR) {
 		fprintf(stderr, "[ERROR] Could not send username to the server. Error code: %d\n", WSAGetLastError());
-		exit(-1);
-	}
-
-	recv_size = recv(server_fd, conf_msg, sizeof(conf_msg), 0);
-	if (recv_size == 0 || !strcmp(conf_msg, "CONF")) {
-		fprintf(stderr, "[ERROR] Server did not receive username. Aborting.\n");
-		exit(-1);
+		ExitProcess(-1);
 	}
 }
 
