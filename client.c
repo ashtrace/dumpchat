@@ -6,19 +6,24 @@
 #define TRUE			1
 #define ADDR_SIZE		16
 #define MSG_SIZE		256
-#define USR_NAME_SIZE	32
+#define USR_NAME_SIZE		32
+
+DWORD WINAPI read_msg_thread(LPVOID lpParam);
 
 void recv_banner(SOCKET server_fd);
 void send_username(SOCKET server_fd, char *username);
-void communicate(SOCKET server_fd);
+void send_msg(SOCKET server_fd);
+void read_msg(SOCKET server_fd);
 
 int main(int argc, char *argv[]) {
 	WSADATA wsa;
-	SOCKET socket_fd;
+	SOCKET server_fd;
 	struct sockaddr_in server;
 	char address[ADDR_SIZE];
 	char username[USR_NAME_SIZE];
 	unsigned int port = 0;
+	DWORD thread_id;
+	HANDLE thread_handle;
 
 	puts("[DEBUG] Initialising Winsock...\n");
 
@@ -29,7 +34,7 @@ int main(int argc, char *argv[]) {
 
 	puts("[DEBUG] Winsock Initialisation complete.\n");
 
-	if ( ( socket_fd = socket(AF_INET, SOCK_STREAM, 0) ) == INVALID_SOCKET ) {
+	if ( ( server_fd = socket(AF_INET, SOCK_STREAM, 0) ) == INVALID_SOCKET ) {
 		fprintf(stderr, "[ERROR] Failed to create socket. Error Code: %d\n", WSAGetLastError());
 		return -1;
 	}
@@ -47,16 +52,26 @@ int main(int argc, char *argv[]) {
 	server.sin_port = htons(port);
 	server.sin_family = AF_INET;
 
-	if ( connect(socket_fd, (struct sockaddr *)&server, sizeof(server)) < 0) {
+	if ( connect(server_fd, (struct sockaddr *)&server, sizeof(server)) < 0) {
 		fprintf(stderr, "[ERROR] Failed to connect.\n to %s:%d. Error Code: %d\n", address, port, WSAGetLastError());
 		return -1;
 	}
 
 	printf("[DEBUG] Connected to %s:%d\n", address, port);
 
-	recv_banner(socket_fd);
-	send_username(socket_fd, username);
-	communicate(socket_fd);
+	recv_banner(server_fd);
+	send_username(server_fd, username);
+
+	thread_handle = CreateThread(NULL,
+				     0,
+				     read_msg_thread,
+				     &server_fd,
+				     0,
+				     &thread_id);
+
+
+	CloseHandle(thread_handle);
+	send_msg(server_fd);
 
 	return 0;
 }
@@ -84,7 +99,7 @@ void send_username(SOCKET server_fd, char *username) {
 	}
 }
 
-void communicate(SOCKET server_fd) {
+void send_msg(SOCKET server_fd) {
 	char server_reply[MSG_SIZE], message[MSG_SIZE] = {0};
 
 	int recv_size = 0;
@@ -100,5 +115,24 @@ void communicate(SOCKET server_fd) {
 		} else {
 			send(server_fd, message, strlen(message), 0);
 		}
+	}
+}
+
+DWORD WINAPI read_msg_thread(LPVOID lpParam) {
+	read_msg(*(SOCKET *)lpParam);
+	ExitThread(0);
+}
+
+void read_msg(SOCKET server_fd) {
+	int recv_size;
+	char server_reply[2 * MSG_SIZE];
+
+	while ( ( recv_size = recv(server_fd, server_reply, MSG_SIZE, 0) ) != SOCKET_ERROR ) {
+		server_reply[recv_size] = '\0';
+		printf("%s\n", server_reply);
+	}
+	if (recv_size == SOCKET_ERROR) {
+		puts("[DEBUG] Could not receive message from server. Exiting process.");
+		ExitProcess(-1);
 	}
 }
