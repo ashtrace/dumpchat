@@ -63,7 +63,7 @@ int main(int argc, char *argv[]) {
 	send_username(server_fd, username);
 
 	thread_handle = CreateThread(NULL,
-				     0,
+			   	     0,
 				     read_msg_thread,
 				     &server_fd,
 				     0,
@@ -89,7 +89,7 @@ void recv_banner(SOCKET server_fd) {
 	}
 
 	server_banner[recv_size] = '\0';
-	printf("[DEBUG] Received Data.\n%s\n", server_banner);
+	printf("[DEBUG] Received Data.\n%s\n[>>>>] ", server_banner);
 }
 
 void send_username(SOCKET server_fd, char *username) {
@@ -106,14 +106,15 @@ void send_msg(SOCKET server_fd) {
 
 	setbuf(stdin, NULL);
 	while (TRUE) {
-		printf("[>>>>] ");
+
 		fgets(message, MSG_SIZE, stdin);
 
 		if (!strcmp(message, ":quit\n")) {
 			send(server_fd, "QUIT", strlen("QUIT"), 0);
 			return;
 		} else {
-			send(server_fd, message, strlen(message), 0);
+			/* do not send the terminating newline characeter, thus send strlen(message) - 1 */
+			send(server_fd, message, strlen(message) - 1, 0);
 		}
 	}
 }
@@ -129,7 +130,7 @@ void read_msg(SOCKET server_fd) {
 
 	while ( ( recv_size = recv(server_fd, server_reply, MSG_SIZE, 0) ) != SOCKET_ERROR ) {
 		server_reply[recv_size] = '\0';
-		printf("%s\n", server_reply);
+		printf("[<<<<] %s\n[>>>>] ", server_reply);
 	}
 	if (recv_size == SOCKET_ERROR) {
 		puts("[DEBUG] Could not receive message from server. Exiting process.");
