@@ -1,5 +1,12 @@
+/* This file includes definitions of macros and 
+ * functions responsible for client side connection
+ */
+
+
 #include "interface.h"
 
+
+/* Interface to operate on ncurses windows */
 int     /* Return value: 1 - Success, 0 - Failure */
 dumpchat_interface(int flag, char *buffer) {
     /* flag to determine action
@@ -17,18 +24,19 @@ dumpchat_interface(int flag, char *buffer) {
         
         int max_y, max_x;
         getmaxyx(stdscr, max_y, max_x);
+
         dump_win = newwin(max_y - 6, max_x / 2 - 8, 2, 8);
         scrollok(dump_win, TRUE);
 
         output_win = newwin(max_y / 2, max_x / 2 - 12, max_y - 40, max_x / 2 + 8);
         scrollok(output_win, TRUE);
+        leaveok(output_win, TRUE);
         
         input_win = newwin(3, max_x / 2 - 12, max_y + max_y / 2 - 38, max_x / 2 + 8);
 
         banner_win = newwin(max_y / 3 - 4, max_x / 2 - 12, 2, max_x / 2 + 8);
         
         init_windows(dump_win, output_win, input_win, banner_win);
-
     } else if (flag == INTERFACE_INPUT && buffer != NULL) {
         input(input_win, buffer);
     } else if (flag == INTERFACE_OUTPUT && buffer != NULL) {
@@ -42,6 +50,7 @@ dumpchat_interface(int flag, char *buffer) {
     return 1;
 }
 
+/* Initialize windows and their default configuration */
 void
 init_windows(WINDOW *dump_win, WINDOW *output_win, WINDOW *input_win, WINDOW *banner_win) {
     /* dump_win, output_win, input_win, banner_win : handle to different windows on application interface
@@ -99,17 +108,7 @@ init_windows(WINDOW *dump_win, WINDOW *output_win, WINDOW *input_win, WINDOW *ba
 
 }
 
-void
-output(WINDOW *output_win, char *str) {
-    /* output_win: handle to output window
-     * str: character array to print on output window
-     */
-
-    wprintw(output_win, " %s\n", str);
-    box(output_win, 0, 0);
-    wrefresh(output_win);
-}
-
+/* Get user input from user-interface*/
 void
 input(WINDOW *input_win, char *str) {
     /* input_win: handle to input window
@@ -120,4 +119,16 @@ input(WINDOW *input_win, char *str) {
     wrefresh(input_win);
     wgetstr(input_win, str);
     wclear(input_win);
+}
+
+/* Give output onto user-interface */
+void
+output(WINDOW *output_win, char *str) {
+    /* output_win: handle to output window
+     * str: character array to print on output window
+     */
+
+    wprintw(output_win, " %s\n", str);
+    box(output_win, 0, 0);
+    wrefresh(output_win);
 }
