@@ -35,8 +35,8 @@ int main(int argc, char *argv[]) {
 	SOCKET server_socket;
 	client_struct *current_client, *client_list_head, *client_list_rear;
 	struct sockaddr_in server, client;
-	const unsigned int sockaddr_in_size = sizeof(struct sockaddr_in);
-	const unsigned int client_struct_size = sizeof(client_struct);
+	unsigned int sockaddr_in_size = sizeof(struct sockaddr_in);
+	unsigned int client_struct_size = sizeof(client_struct);
 	DWORD thread_id;
 	HANDLE thread_handle;
 	HANDLE process_heap_handle;
@@ -107,11 +107,11 @@ int main(int argc, char *argv[]) {
 
 		thread_param -> current_client = current_client;
 
-		thread_handle = CreateThread(NULL,				/* default security attributes */
-					     0,					/* default stack size */
-					     communication_thread,		/* thread function */
-					     thread_param,			/* arguement to thread function */
-					     0,					/* default creation flags */
+		thread_handle = CreateThread(NULL,			/* default security attributes */
+					     0,				/* default stack size */
+					     communication_thread,	/* thread function */
+					     thread_param,		/* arguement to thread function */
+					     0,				/* default creation flags */
 					     &thread_id);
 		
 		CloseHandle(thread_handle);
@@ -155,7 +155,7 @@ DWORD WINAPI communication_thread(LPVOID lpParam) {
 }
 
 int send_banner(SOCKET client_socket, char *addr) {
-	const char *banner = "Hello, There\nEnter message\nYou can exit by typing \":quit\"\n";
+	const char *banner = "=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=\n Hello, There\n Enter message\n You can exit by typing \":quit\"\n =+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=\n";
 	if (send(client_socket, banner, strlen(banner), 0) == SOCKET_ERROR) {
 		fprintf(stderr, "[!!] Could not send banner to %s. Error code: %d\n", addr, WSAGetLastError());
 		return -1;
