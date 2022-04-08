@@ -3,7 +3,7 @@
 #ifndef COMMON_INCLUDES
 #define COMMON_INCLUDES
 
-#include <stdio.h>                      /* for printf, puts, sprintf, fprintf and related resources */
-#include <winsock.h>                    /* for socket programming */
+#include <stdio.h>                      /* for standard input/output functions */
+#include <winsock2.h>                   /* for socket programming */
 
 #endif /* COMMON_INCLUDE */

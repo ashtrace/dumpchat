@@ -6,11 +6,11 @@
 #include "../common/includes.h"
 #include "../common/definitions.h"
 
-typedef struct client_structure {				/* node in linked list of clients */
-	SOCKET                      client_socket;		/* socket to client's connection */
-	char	                    username[USERNAME_SIZE];	/* username sent by client */
-	char	                    client_addr[ADDR_SIZE];	/* IPv4 address of client */
-	struct client_structure     *prev, *next;		/* pointers to previous and next client-nodes in linked list of clients */
+typedef struct client_structure {				        /* node in linked list of clients */
+	SOCKET                      client_socket;			/* socket to client's connection */
+	char	                    username[USERNAME_SIZE];		/* username sent by client */
+	char	                    client_addr[ADDR_SIZE];		/* IPv4 address of client */
+	struct client_structure     *prev, *next;		        /* pointers to previous and next client-nodes in linked list of clients */
 } client_struct;
 
 typedef struct {                                	/* store client parameters to communication_thread function */

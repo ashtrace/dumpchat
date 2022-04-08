@@ -2,9 +2,7 @@
  * functions responsible for client side connection
  */
 
-
 #include "interface.h"
-
 
 /* Interface to operate on ncurses windows */
 int     /* Return value: 1 - Success, 0 - Failure */
@@ -41,6 +39,10 @@ dumpchat_interface(int flag, char *buffer) {
         input(input_win, buffer);
     } else if (flag == INTERFACE_OUTPUT && buffer != NULL) {
         output(output_win, buffer);
+    } else if (flag == INTERFACE_STR_DUMP && buffer != NULL) {
+        dump(dump_win, buffer);
+    } else if (flag == INTERFACE_RAW_DUMP && buffer != NULL) {
+        raw_dump(dump_win, (raw_data_struct *)buffer);
     } else if (flag == INTERFACE_CLEANUP) {
         endwin();
     } else {
@@ -110,25 +112,75 @@ init_windows(WINDOW *dump_win, WINDOW *output_win, WINDOW *input_win, WINDOW *ba
 
 /* Get user input from user-interface*/
 void
-input(WINDOW *input_win, char *str) {
+input(WINDOW *input_win, char *buffer) {
     /* input_win: handle to input window
-     * str: character array to store user input
+     * buffer: character array to store user input
      */
     box(input_win, 0, 0);
     mvwprintw(input_win, 1, 1, "[>>>>] ");
     wrefresh(input_win);
-    wgetstr(input_win, str);
+    wgetstr(input_win, buffer);
     wclear(input_win);
 }
 
 /* Give output onto user-interface */
 void
-output(WINDOW *output_win, char *str) {
+output(WINDOW *output_win, char *buffer) {
     /* output_win: handle to output window
-     * str: character array to print on output window
+     * buffer: character array to print on output window
      */
 
-    wprintw(output_win, " %s\n", str);
+    wprintw(output_win, " %s\n", buffer);
     box(output_win, 0, 0);
     wrefresh(output_win);
 }
+
+/* Give tcp packet information onto user-interface */
+void
+dump(WINDOW *dump_win, char *buffer) {
+    /* dump_win: handle to packet dump window */
+    /* buffer: character array to print on dump window */
+
+    wprintw(dump_win, "%s", buffer);
+    box(dump_win, 0, 0);
+    wrefresh(dump_win);    
+}
+
+/* Dump raw bytes */
+void
+raw_dump(WINDOW *dump_win, raw_data_struct *raw_data ) {
+    char            ch;                /* store character to print */
+    char            ascii_code;        /* store ascii code of data character */
+    char            line[17];          /* character array to print 16 characters in a line, 16 characters + '\0' */
+    unsigned int    size;              /* size of raw data buffer */
+    char            *data;             /* pointer to raw data */
+    
+    size = raw_data -> size;
+    data = raw_data -> buffer;
+    
+    /* loop over each character in data buffer */
+    for ( int i = 0; i < size; ++i ) {
+        ascii_code = data[i];
+
+        /* print hex value for each character */
+        wprintw(dump_win, " %02x", (unsigned char)ascii_code);
+        line[i % 16] = (ascii_code >= 32 && ascii_code <= 128) ? ascii_code : '.';
+
+        /* add character to print to line and print the line */
+        if ( ( i != 0 && (i + 1) % 16 == 0 ) || i == size - 1 ) {
+            line[i % 16 + 1] = '\0';
+
+            /* print a column of space as separation b/w hexadecimal and characters */
+            wprintw(dump_win, "\t\t");
+
+            /* print additional space for last line which might be less than 16 characters */
+            for ( int j = strlen(line); j < 16; ++j ) {
+                wprintw(dump_win, "   ");
+            }
+            if (strlen(line) < 16)
+                wprintw(dump_win, "\t");
+
+            wprintw(dump_win, "%s\n", line);
+        }
+    }
+}   

@@ -1,8 +1,6 @@
 /* This file includes definitions of functions responsible for client side connection */
 
 #include "connection.h"
-#include "interface.h"
-#include "../common/definitions.h"
 
 /* receive server's default banner upon establishing connection */
 void
@@ -77,6 +75,7 @@ read_msg(SOCKET server_fd) {
 
 	while ( ( recv_size = recv(server_fd, server_reply, MSG_SIZE, 0) ) != SOCKET_ERROR ) {
 		server_reply[recv_size] = '\0';
+
 		dumpchat_interface(INTERFACE_OUTPUT, server_reply);
 	}
 	if (recv_size == SOCKET_ERROR) {

@@ -4,6 +4,8 @@
 #define CLIENT_CONNECTION
 
 #include "../common/includes.h"
+#include "../common/definitions.h"
+#include "interface.h"
 
 /* receive server's default banner upon establishing connection */
 void

@@ -1,7 +1,6 @@
 /* This file includes definitions of components responsible for client side connection */
 
 #include "connection.h"
-#include "../common/definitions.h"
 
 /* wrapper thread function for client communication functions */
 DWORD       /* standard format requires DWORD return type, although we terminate by closing the thread through ExitThread */

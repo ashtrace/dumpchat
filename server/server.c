@@ -83,12 +83,8 @@ int main(int argc, char *argv[]) {
 
 		thread_param -> current_client = current_client;
 
-		thread_handle = CreateThread(NULL,				/* default security attributes */
-					     0,					/* default stack size */
-					     communication_thread,		/* thread function */
-					     thread_param,			/* arguement to thread function */
-					     0,					/* default creation flags */
-					     &thread_id);
+		/* Create thread to handle the client */
+		thread_handle = CreateThread(NULL, 0, communication_thread, thread_param, 0, &thread_id);
 		
 		CloseHandle(thread_handle);
 	}
