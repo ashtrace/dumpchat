@@ -15,3 +15,9 @@ Dumpchat is socket based chat client which dumps packet data information as well
 - Socket programming is done through winsock2.
 - Curses interface is made with the help of pdcurses.
 
+## Output
+<p align="center">
+  <kbd>
+    <img src="./images/dumpchat_interface.png" width="1012px" height="536px" align="center">
+  </kbd>
+</p>
